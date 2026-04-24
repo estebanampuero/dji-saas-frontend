@@ -13,20 +13,35 @@ import AlertItem from '@/components/AlertItem';
 import DroneCard from '@/components/DroneCard';
 import type { Drone, Stats, Alert, Telemetry } from '@/types';
 
+interface MetricDef {
+  key: string;
+  label: string;
+  category: string;
+  unit: string;
+  enabled: boolean;
+  display_name: string;
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [tab,         setTab]         = useState('dashboard');
-  const [drones,      setDrones]      = useState<Drone[]>([]);
-  const [selected,    setSelected]    = useState<Drone | null>(null);
-  const [stats,       setStats]       = useState<Stats | null>(null);
-  const [dbAlerts,    setDbAlerts]    = useState<Alert[]>([]);
-  const [latestTelem, setLatestTelem] = useState<Telemetry | null>(null);
+  const [tab,          setTab]          = useState('dashboard');
+  const [drones,       setDrones]       = useState<Drone[]>([]);
+  const [selected,     setSelected]     = useState<Drone | null>(null);
+  const [stats,        setStats]        = useState<Stats | null>(null);
+  const [dbAlerts,     setDbAlerts]     = useState<Alert[]>([]);
+  const [latestTelem,  setLatestTelem]  = useState<Telemetry | null>(null);
+  const [metricDefs,   setMetricDefs]   = useState<MetricDef[]>([]);
 
   const { telemetry, alerts: wsAlerts, connected } = useSocket(selected?.serial_number);
   const activeTelemetry = telemetry ?? latestTelem;
   const allAlerts = [...wsAlerts, ...dbAlerts].slice(0, 30);
+
+  // Set of enabled metric keys for this org
+  const enabledKeys = new Set(metricDefs.filter(m => m.enabled).map(m => m.key));
+  const show = (key: string) => enabledKeys.size === 0 || enabledKeys.has(key);
+  const label = (key: string, fallback: string) => metricDefs.find(m => m.key === key)?.display_name ?? fallback;
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
@@ -34,10 +49,13 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const [dr, st, al] = await Promise.all([api.drones(), api.stats(), api.alerts()]);
+      const [dr, st, al, mv] = await Promise.all([
+        api.drones(), api.stats(), api.alerts(), api.metricVisibility(),
+      ]);
       setDrones(dr.data ?? []);
       setStats(st.data);
       setDbAlerts(al.data ?? []);
+      setMetricDefs(mv.data ?? []);
       if (!selected && dr.data?.length) setSelected(dr.data[0]);
     } catch {}
   }, []);
@@ -61,6 +79,19 @@ export default function Dashboard() {
   );
 
   const openAlerts = allAlerts.filter(a => !a.resolved);
+
+  // Determine which main panels to show
+  const showBattery    = show('battery_percent') || show('battery_voltage');
+  const showGPS        = show('lat') || show('satellite_count');
+  const showFlight     = show('altitude') || show('flight_mode') || show('horizontal_speed');
+  const extraMetrics   = [
+    show('gimbal_pitch')      && { key: 'gimbal_pitch',      label: label('gimbal_pitch', 'Gimbal Pitch'), value: activeTelemetry?.gimbal_pitch?.toFixed(1),      unit: '°',   color: '#a78bfa' },
+    show('vertical_speed')    && { key: 'vertical_speed',    label: label('vertical_speed', 'V.Speed'),   value: activeTelemetry?.vertical_speed?.toFixed(1),    unit: 'm/s', color: '#00d4ff' },
+    show('rc_signal_quality') && { key: 'rc_signal_quality', label: label('rc_signal_quality', 'RC Signal'), value: activeTelemetry?.rc_signal_quality,            unit: '%',   color: '#00ff88' },
+    show('gimbal_yaw')        && { key: 'gimbal_yaw',        label: label('gimbal_yaw', 'Gimbal Yaw'),    value: activeTelemetry?.gimbal_yaw?.toFixed(1),        unit: '°',   color: '#fbbf24' },
+    show('gimbal_roll')       && { key: 'gimbal_roll',       label: label('gimbal_roll', 'Gimbal Roll'),  value: activeTelemetry?.gimbal_roll?.toFixed(1),        unit: '°',   color: '#fb923c' },
+    show('wind_speed')        && { key: 'wind_speed',        label: label('wind_speed', 'Viento'),        value: activeTelemetry?.wind_speed?.toFixed(1),        unit: 'm/s', color: '#34d399' },
+  ].filter(Boolean) as { key: string; label: string; value: any; unit: string; color: string }[];
 
   return (
     <div className="flex h-screen overflow-hidden relative z-10">
@@ -125,39 +156,49 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold text-slate-200">{selected.nickname || selected.serial_number}</span>
                       <span className="text-xs text-slate-500">{selected.model}</span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <BatteryGauge
-                        percent={activeTelemetry?.battery_percent ?? 0}
-                        voltage={activeTelemetry?.battery_voltage}
-                        temp={activeTelemetry?.battery_temp}
-                        remainingMin={activeTelemetry?.remaining_flight_time} />
-                      <GPSPanel
-                        lat={activeTelemetry?.lat}
-                        lng={activeTelemetry?.lng}
-                        satellites={activeTelemetry?.satellite_count}
-                        gpsLevel={activeTelemetry?.gps_level}
-                        rtk={activeTelemetry?.rtk_state} />
+
+                    <div className={`grid gap-4 ${showBattery && showGPS ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                      {showBattery && (
+                        <BatteryGauge
+                          percent={activeTelemetry?.battery_percent ?? 0}
+                          voltage={show('battery_voltage') ? activeTelemetry?.battery_voltage : undefined}
+                          temp={show('battery_temp') ? activeTelemetry?.battery_temp : undefined}
+                          remainingMin={show('remaining_flight_time') ? activeTelemetry?.remaining_flight_time : undefined} />
+                      )}
+                      {showGPS && (
+                        <GPSPanel
+                          lat={show('lat') ? activeTelemetry?.lat : undefined}
+                          lng={show('lng') ? activeTelemetry?.lng : undefined}
+                          satellites={show('satellite_count') ? activeTelemetry?.satellite_count : undefined}
+                          gpsLevel={show('gps_level') ? activeTelemetry?.gps_level : undefined}
+                          rtk={show('rtk_state') ? activeTelemetry?.rtk_state : undefined} />
+                      )}
                     </div>
-                    <FlightStatus
-                      mode={activeTelemetry?.flight_mode}
-                      isFlying={activeTelemetry?.is_flying}
-                      altitude={activeTelemetry?.altitude}
-                      speed={activeTelemetry?.horizontal_speed}
-                      heading={activeTelemetry?.heading}
-                      windSpeed={activeTelemetry?.wind_speed} />
-                    {/* Extra metrics */}
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { label: 'Gimbal Pitch', value: activeTelemetry?.gimbal_pitch?.toFixed(1), unit:'°', color:'#a78bfa' },
-                        { label: 'V.Speed',      value: activeTelemetry?.vertical_speed?.toFixed(1), unit:'m/s', color:'#00d4ff' },
-                        { label: 'RC Signal',    value: activeTelemetry?.rc_signal_quality, unit:'%', color:'#00ff88' },
-                      ].map(m => (
-                        <div key={m.label} className="glass p-3 text-center">
-                          <p className="text-xs text-slate-500 mb-1">{m.label}</p>
-                          <p className="text-lg font-bold" style={{ color: m.color }}>{m.value ?? '—'}<span className="text-xs text-slate-500">{m.unit}</span></p>
-                        </div>
-                      ))}
-                    </div>
+
+                    {showFlight && (
+                      <FlightStatus
+                        mode={show('flight_mode') ? activeTelemetry?.flight_mode : undefined}
+                        isFlying={show('is_flying') ? activeTelemetry?.is_flying : undefined}
+                        altitude={show('altitude') ? activeTelemetry?.altitude : undefined}
+                        speed={show('horizontal_speed') ? activeTelemetry?.horizontal_speed : undefined}
+                        heading={show('heading') ? activeTelemetry?.heading : undefined}
+                        windSpeed={show('wind_speed') ? activeTelemetry?.wind_speed : undefined} />
+                    )}
+
+                    {/* Extra metrics — only those enabled */}
+                    {extraMetrics.length > 0 && (
+                      <div className={`grid gap-3 grid-cols-${Math.min(extraMetrics.length, 3)}`}
+                        style={{ gridTemplateColumns: `repeat(${Math.min(extraMetrics.length, 3)}, minmax(0, 1fr))` }}>
+                        {extraMetrics.map(m => (
+                          <div key={m.key} className="glass p-3 text-center">
+                            <p className="text-xs text-slate-500 mb-1">{m.label}</p>
+                            <p className="text-lg font-bold" style={{ color: m.color }}>
+                              {m.value ?? '—'}<span className="text-xs text-slate-500 ml-0.5">{m.unit}</span>
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="glass p-12 text-center text-slate-600 text-sm">Select a drone to view telemetry</div>
@@ -201,7 +242,7 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Live alerts toast (right side) */}
+      {/* Live alerts toast */}
       {wsAlerts.length > 0 && (
         <div className="fixed bottom-4 right-4 space-y-2 z-50 w-72">
           {wsAlerts.slice(0,3).map((a,i) => (
@@ -257,4 +298,3 @@ function AddDroneForm({ onAdded }: { onAdded: () => void }) {
     </form>
   );
 }
-

@@ -26,6 +26,7 @@ export const api = {
     req<any>(`/api/drones/${id}/telemetry?limit=200${from ? `&from=${from}` : ''}${to ? `&to=${to}` : ''}`),
   flights:    () => req<any>('/api/flights'),
   alerts:     () => req<any>('/api/alerts'),
-  stats:      () => req<any>('/api/stats/summary'),
-  resolve:    (id: string) => req<any>(`/api/alerts/${id}/resolve`, { method: 'PATCH' }),
+  stats:            () => req<any>('/api/stats/summary'),
+  resolve:          (id: string) => req<any>(`/api/alerts/${id}/resolve`, { method: 'PATCH' }),
+  metricVisibility: () => req<any>('/api/metrics/visibility'),
 };

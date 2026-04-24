@@ -31,6 +31,21 @@ export interface Telemetry {
   flight_mode: string;
   is_flying: boolean;
   ts: string;
+
+  // Agras T25 — Agricultural
+  spray_state?: boolean;
+  pump_state?: boolean;
+  tank_volume_percent?: number;
+  flow_rate?: number;
+  spread_width?: number;
+  ac_area?: number;
+  ac_length?: number;
+  ac_time?: number;
+  work_state?: string;
+  radar_height?: number;
+  payload_weight?: number;
+  nozzle_clogged?: boolean;
+  spread_state?: boolean;
 }
 
 export interface Alert {

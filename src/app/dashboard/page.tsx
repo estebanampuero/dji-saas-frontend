@@ -175,6 +175,11 @@ export default function Dashboard() {
                       )}
                     </div>
 
+                                    {/* Agras T25 Agricultural Panel */}
+                    {(show('spray_state') || show('tank_volume_percent')) && activeTelemetry?.tank_volume_percent != null && (
+                      <AgrasPanel telemetry={activeTelemetry} show={show} label={label} />
+                    )}
+
                     {showFlight && (
                       <FlightStatus
                         mode={show('flight_mode') ? activeTelemetry?.flight_mode : undefined}
@@ -250,6 +255,78 @@ export default function Dashboard() {
               <span style={{ color: a.severity==='critical' ? '#ef4444' : '#fbbf24' }}>⚠ {a.message}</span>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AgrasPanel({ telemetry: t, show, label }: {
+  telemetry: import('@/types').Telemetry;
+  show: (k: string) => boolean;
+  label: (k: string, fb: string) => string;
+}) {
+  const tankPct  = t.tank_volume_percent ?? 0;
+  const spraying = t.spray_state;
+  const tankColor = tankPct > 40 ? '#00ff88' : tankPct > 15 ? '#fbbf24' : '#ef4444';
+
+  const cards = [
+    show('spray_state')         && { k: 'spray_state',         lbl: label('spray_state','Pulverización'),    val: spraying ? 'ACTIVA' : 'INACTIVA', color: spraying ? '#00ff88' : '#64748b', unit: '' },
+    show('pump_state')          && { k: 'pump_state',          lbl: label('pump_state','Bomba'),             val: t.pump_state ? 'ON' : 'OFF',       color: t.pump_state ? '#00d4ff' : '#64748b', unit: '' },
+    show('flow_rate')           && { k: 'flow_rate',           lbl: label('flow_rate','Caudal'),             val: t.flow_rate?.toFixed(1),           color: '#00d4ff', unit: 'L/min' },
+    show('spread_width')        && { k: 'spread_width',        lbl: label('spread_width','Ancho trabajo'),   val: t.spread_width?.toFixed(1),        color: '#a78bfa', unit: 'm' },
+    show('radar_height')        && { k: 'radar_height',        lbl: label('radar_height','Altura radar'),    val: t.radar_height?.toFixed(1),        color: '#fbbf24', unit: 'm' },
+    show('ac_area')             && { k: 'ac_area',             lbl: label('ac_area','Área cubierta'),        val: t.ac_area ? (t.ac_area >= 10000 ? (t.ac_area/10000).toFixed(2)+'ha' : t.ac_area.toFixed(0)+'m²') : '0m²', color: '#34d399', unit: '' },
+    show('payload_weight')      && { k: 'payload_weight',      lbl: label('payload_weight','Carga líquida'),  val: t.payload_weight?.toFixed(1),      color: '#00d4ff', unit: 'kg' },
+    show('work_state')          && { k: 'work_state',          lbl: label('work_state','Estado'),            val: t.work_state?.toUpperCase(),       color: '#a78bfa', unit: '' },
+    show('nozzle_clogged')      && t.nozzle_clogged && { k: 'nozzle_clogged', lbl: 'ALERTA BOQUILLA', val: 'OBSTRUIDA', color: '#ef4444', unit: '' },
+  ].filter(Boolean) as { k: string; lbl: string; val: any; color: string; unit: string }[];
+
+  return (
+    <div className="glass p-4 space-y-3" style={{ borderColor: spraying ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">🌿 Agras T25 — Pulverización</p>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{ background: spraying ? 'rgba(0,255,136,0.1)' : 'rgba(100,116,139,0.1)', color: spraying ? '#00ff88' : '#64748b' }}>
+          {t.work_state?.toUpperCase() ?? 'IDLE'}
+        </span>
+      </div>
+
+      {/* Tank gauge */}
+      {show('tank_volume_percent') && (
+        <div>
+          <div className="flex justify-between text-xs mb-1.5">
+            <span className="text-slate-400">{label('tank_volume_percent', 'Nivel Tanque')}</span>
+            <span style={{ color: tankColor }} className="font-bold">{tankPct}%</span>
+          </div>
+          <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${tankPct}%`, background: `linear-gradient(90deg, ${tankColor}66, ${tankColor})` }} />
+          </div>
+          {tankPct < 15 && (
+            <p className="text-xs text-red-400 mt-1 animate-pulse">⚠ Tanque crítico — recargar</p>
+          )}
+        </div>
+      )}
+
+      {/* Metric grid */}
+      {cards.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {cards.map(m => (
+            <div key={m.k} className="text-center p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <p className="text-xs text-slate-500 mb-0.5">{m.lbl}</p>
+              <p className="text-sm font-bold" style={{ color: m.color }}>{m.val ?? '—'}<span className="text-xs text-slate-500 ml-0.5">{m.unit}</span></p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Accumulated mission stats */}
+      {(show('ac_area') || show('ac_length')) && (
+        <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/5">
+          {show('ac_area')   && <div className="text-center"><p className="text-xs text-slate-500">Área acum.</p><p className="text-sm font-semibold text-green-400">{t.ac_area ? (t.ac_area >= 10000 ? (t.ac_area/10000).toFixed(3)+' ha' : t.ac_area.toFixed(0)+' m²') : '0 m²'}</p></div>}
+          {show('ac_length') && <div className="text-center"><p className="text-xs text-slate-500">Dist. acum.</p><p className="text-sm font-semibold text-cyan-400">{t.ac_length ? (t.ac_length >= 1000 ? (t.ac_length/1000).toFixed(2)+' km' : t.ac_length.toFixed(0)+' m') : '0 m'}</p></div>}
+          {show('ac_time')   && <div className="text-center"><p className="text-xs text-slate-500">Tiempo acum.</p><p className="text-sm font-semibold text-purple-400">{t.ac_time ? Math.floor(t.ac_time/60)+'min' : '0min'}</p></div>}
         </div>
       )}
     </div>

@@ -115,6 +115,13 @@ export default function Dashboard() {
               <span className="w-1.5 h-1.5 rounded-full pulse" style={{ background: connected ? '#00ff88' : '#ef4444' }} />
               <span className="text-xs" style={{ color: connected ? '#00ff88' : '#ef4444' }}>{connected ? 'WS LIVE' : 'OFFLINE'}</span>
             </div>
+            {user?.role === 'superadmin' && (
+              <button onClick={() => router.push('/admin')}
+                className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+                style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>
+                ◈ Admin
+              </button>
+            )}
             <div className="text-xs text-slate-500 glass px-3 py-1.5 rounded-full">
               {user?.email}
             </div>

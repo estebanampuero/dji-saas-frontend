@@ -19,13 +19,15 @@ export default function LoginPage() {
     try {
       if (mode === 'login') {
         await login(email, password);
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        router.push(u.role === 'superadmin' ? '/admin' : '/dashboard');
       } else {
         const { api } = await import('@/lib/api');
         const res = await api.register(orgName, email, password);
         localStorage.setItem('token', res.access_token);
         localStorage.setItem('user', JSON.stringify(res.user));
+        router.push('/dashboard');
       }
-      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {

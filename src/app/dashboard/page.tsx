@@ -97,32 +97,31 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden relative z-10">
       <Sidebar active={tab} onChange={setTab} alertCount={openAlerts.length} />
 
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-3 md:p-6 mobile-pb">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
           <div>
-            <h1 className="text-xl font-bold text-slate-100">
+            <h1 className="text-lg md:text-xl font-bold text-slate-100">
               {tab === 'dashboard' && 'Live Dashboard'}
-              {tab === 'fleet'     && 'Fleet Management'}
-              {tab === 'flights'   && 'Flight History'}
-              {tab === 'alerts'    && 'Alerts'}
+              {tab === 'fleet'     && 'Fleet'}
+              {tab === 'alerts'    && 'Alertas'}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">{new Date().toLocaleString()}</p>
+            <p className="text-xs text-slate-500 mt-0.5 hidden sm:block">{new Date().toLocaleString()}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full"
               style={{ background: connected ? 'rgba(0,255,136,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${connected ? 'rgba(0,255,136,0.2)' : 'rgba(239,68,68,0.2)'}` }}>
               <span className="w-1.5 h-1.5 rounded-full pulse" style={{ background: connected ? '#00ff88' : '#ef4444' }} />
-              <span className="text-xs" style={{ color: connected ? '#00ff88' : '#ef4444' }}>{connected ? 'WS LIVE' : 'OFFLINE'}</span>
+              <span className="text-xs hidden sm:inline" style={{ color: connected ? '#00ff88' : '#ef4444' }}>{connected ? 'LIVE' : 'OFF'}</span>
             </div>
             {user?.role === 'superadmin' && (
               <button onClick={() => router.push('/admin')}
-                className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+                className="text-xs px-2 md:px-3 py-1.5 rounded-full font-medium transition-all"
                 style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>
-                ◈ Admin
+                ◈ <span className="hidden sm:inline">Admin</span>
               </button>
             )}
-            <div className="text-xs text-slate-500 glass px-3 py-1.5 rounded-full">
+            <div className="text-xs text-slate-500 glass px-2 md:px-3 py-1.5 rounded-full hidden sm:block truncate max-w-[140px]">
               {user?.email}
             </div>
           </div>
@@ -130,18 +129,18 @@ export default function Dashboard() {
 
         {/* DASHBOARD TAB */}
         {tab === 'dashboard' && (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Stats row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
               <StatCard label="Total Drones"   value={stats?.total_drones ?? 0}                  icon="🚁" color="cyan"   />
               <StatCard label="Flight Hours"   value={stats?.total_flight_hours ?? 0} unit="h"   icon="⏱" color="green"  />
               <StatCard label="Distance"       value={stats?.total_distance_km ?? 0}  unit="km"  icon="📍" color="purple" />
               <StatCard label="Open Alerts"    value={openAlerts.length}                          icon="⚠️" color="orange" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
               {/* Fleet sidebar */}
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fleet</h2>
                 {drones.length === 0 && (
                   <div className="glass p-4 text-center text-xs text-slate-600">

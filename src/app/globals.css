@@ -73,3 +73,8 @@ body::before {
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius:4px; }
+
+/* ── Mobile bottom nav safe area ── */
+@media (max-width: 767px) {
+  .mobile-pb { padding-bottom: 72px; }
+}

@@ -121,7 +121,7 @@ export default function HistoryPage() {
   if (loading) return null;
 
   return (
-    <div className="min-h-screen relative z-10 p-6">
+    <div className="min-h-screen relative z-10 p-3 md:p-6 mobile-pb">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -134,22 +134,20 @@ export default function HistoryPage() {
         </button>
       </div>
 
-      {/* Selector de dron */}
-      <div className="flex items-center gap-3 mb-6">
+      {/* Selector de dron + importar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-4 md:mb-6">
         <select value={selected} onChange={e => setSelected(e.target.value)}
-          className="px-4 py-2 rounded-xl text-sm text-slate-200 outline-none"
+          className="flex-1 px-4 py-2 rounded-xl text-sm text-slate-200 outline-none"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           {drones.map(d => (
             <option key={d.id} value={d.id}>{d.nickname || d.serial_number} — {d.model}</option>
           ))}
         </select>
-
-        {/* Botón importar */}
         <label className="cursor-pointer">
           <input ref={fileRef} type="file" accept=".csv,.kml,.txt" className="hidden" onChange={handleImport} disabled={importing} />
-          <span className="text-xs px-4 py-2 rounded-xl font-semibold transition-all inline-block"
+          <span className="text-xs px-4 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1.5"
             style={{ background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.2)', opacity: importing ? 0.5 : 1 }}>
-            {importing ? '⏳ Importando...' : '⬆ Importar CSV / KML de DJI Agras'}
+            {importing ? '⏳ Importando...' : '⬆ Importar DJI Agras'}
           </span>
         </label>
       </div>
@@ -201,43 +199,43 @@ export default function HistoryPage() {
       ) : (
         <div className="space-y-2">
           {flights.map(f => (
-            <div key={f.id} className="glass p-4 flex items-center gap-4">
-              <div className="text-2xl">✈️</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-semibold text-slate-200 truncate">
-                    {f.mission_name || f.filename || 'Vuelo sin nombre'}
-                  </p>
-                  <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: f.status === 'completed' ? 'rgba(0,255,136,0.08)' : 'rgba(251,191,36,0.08)', color: f.status === 'completed' ? '#00ff88' : '#fbbf24' }}>
-                    {f.status}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  {fmtDate(f.started_at)}
-                  {f.ended_at && f.started_at !== f.ended_at && ` → ${fmtDate(f.ended_at)}`}
-                </p>
-              </div>
-              <div className="flex gap-4 text-center flex-shrink-0">
-                {f.total_area_m2 && (
-                  <div>
-                    <p className="text-xs text-slate-500">Área</p>
-                    <p className="text-sm font-semibold text-green-400">{fmtArea(f.total_area_m2)}</p>
+            <div key={f.id} className="glass p-3 md:p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-xl md:text-2xl flex-shrink-0 mt-0.5">✈️</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <p className="text-sm font-semibold text-slate-200 truncate">
+                      {f.mission_name || f.filename || 'Vuelo sin nombre'}
+                    </p>
+                    <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{ background: f.status === 'completed' ? 'rgba(0,255,136,0.08)' : 'rgba(251,191,36,0.08)', color: f.status === 'completed' ? '#00ff88' : '#fbbf24' }}>
+                      {f.status}
+                    </span>
                   </div>
-                )}
-                <div>
-                  <p className="text-xs text-slate-500">Duración</p>
-                  <p className="text-sm font-semibold text-cyan-400">{fmtDuration(f.duration_seconds)}</p>
-                </div>
-                {f.max_altitude && (
-                  <div>
-                    <p className="text-xs text-slate-500">Alt. máx</p>
-                    <p className="text-sm font-semibold text-purple-400">{f.max_altitude?.toFixed(1)}m</p>
+                  <p className="text-xs text-slate-500 mb-2">{fmtDate(f.started_at)}</p>
+                  {/* Stats en grid responsive */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {f.total_area_m2 && (
+                      <div className="glass p-2 text-center rounded-lg">
+                        <p className="text-xs text-slate-500">Área</p>
+                        <p className="text-sm font-semibold text-green-400">{fmtArea(f.total_area_m2)}</p>
+                      </div>
+                    )}
+                    <div className="glass p-2 text-center rounded-lg">
+                      <p className="text-xs text-slate-500">Duración</p>
+                      <p className="text-sm font-semibold text-cyan-400">{fmtDuration(f.duration_seconds)}</p>
+                    </div>
+                    {f.max_altitude && (
+                      <div className="glass p-2 text-center rounded-lg">
+                        <p className="text-xs text-slate-500">Alt. máx</p>
+                        <p className="text-sm font-semibold text-purple-400">{f.max_altitude?.toFixed(1)}m</p>
+                      </div>
+                    )}
+                    <div className="glass p-2 text-center rounded-lg">
+                      <p className="text-xs text-slate-500">Puntos GPS</p>
+                      <p className="text-sm font-semibold text-slate-400">{f.telemetry_points?.toLocaleString()}</p>
+                    </div>
                   </div>
-                )}
-                <div>
-                  <p className="text-xs text-slate-500">Puntos</p>
-                  <p className="text-sm font-semibold text-slate-400">{f.telemetry_points?.toLocaleString()}</p>
                 </div>
               </div>
             </div>

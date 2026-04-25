@@ -105,27 +105,27 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen relative z-10 p-6">
+    <div className="min-h-screen relative z-10 p-3 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+      <div className="flex items-center justify-between mb-5 md:mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-lg md:text-xl flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(0,212,255,0.1))', border: '1px solid rgba(167,139,250,0.2)' }}>◈</div>
           <div>
-            <h1 className="text-xl font-bold gradient-text">Panel Superadmin</h1>
-            <p className="text-xs text-slate-500">DJI SaaS — Control total del sistema</p>
+            <h1 className="text-lg md:text-xl font-bold gradient-text">Superadmin</h1>
+            <p className="text-xs text-slate-500 hidden sm:block">Control total del sistema</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button onClick={() => router.push('/dashboard')}
-            className="text-xs text-slate-500 hover:text-slate-300 glass px-3 py-1.5 rounded-full">← Dashboard</button>
-          <span className="text-xs text-slate-600 glass px-3 py-1.5 rounded-full">{user.email}</span>
+            className="text-xs text-slate-500 hover:text-slate-300 glass px-2 md:px-3 py-1.5 rounded-full">← Dashboard</button>
+          <span className="text-xs text-slate-600 glass px-2 md:px-3 py-1.5 rounded-full hidden sm:block truncate max-w-[140px]">{user.email}</span>
         </div>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-5 md:mb-8">
           <AdminStatCard label="Organizaciones"      value={stats.total_orgs}          icon="🏢" color="#00d4ff" />
           <AdminStatCard label="Drones totales"      value={stats.total_drones}        icon="🚁" color="#00ff88" />
           <AdminStatCard label="Drones online"       value={stats.online_drones}       icon="📡" color="#00ff88" />
@@ -192,20 +192,21 @@ export default function AdminPage() {
                     <span className="font-mono text-slate-600">{org.slug}</span>
                   </div>
                 </button>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0 justify-end">
                   <button onClick={() => setModal({ type: 'metrics', orgId: org.id, orgName: org.name })}
-                    className="text-xs px-3 py-1.5 rounded-lg transition-all"
+                    className="text-xs px-2 md:px-3 py-1.5 rounded-lg transition-all"
                     style={{ background: 'rgba(0,212,255,0.08)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.15)' }}>
-                    📊 Métricas
+                    📊 <span className="hidden sm:inline">Métricas</span>
                   </button>
                   <button onClick={() => setModal({ type: 'kpi', orgId: org.id, orgName: org.name })}
-                    className="text-xs px-3 py-1.5 rounded-lg transition-all"
+                    className="text-xs px-2 md:px-3 py-1.5 rounded-lg transition-all"
                     style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.15)' }}>
-                    🎯 KPIs
+                    🎯 <span className="hidden sm:inline">KPIs</span>
                   </button>
                   <button onClick={() => expandOrg(org.id)}
-                    className="text-xs px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-200 transition-colors glass">
-                    {expanded === org.id ? '▲ Cerrar' : '▼ Usuarios'}
+                    className="text-xs px-2 md:px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-200 transition-colors glass">
+                    {expanded === org.id ? '▲' : '▼ '}
+                    <span className="hidden sm:inline">{expanded === org.id ? 'Cerrar' : 'Usuarios'}</span>
                   </button>
                   <button onClick={() => deleteOrg(org.id, org.name)}
                     className="text-xs px-2 py-1.5 rounded-lg text-slate-600 hover:text-red-400 transition-colors">✕</button>

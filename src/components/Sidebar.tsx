@@ -1,18 +1,25 @@
 'use client';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 const nav = [
-  { id: 'dashboard', icon: '◈', label: 'Dashboard' },
-  { id: 'fleet',     icon: '🚁', label: 'Fleet' },
-  { id: 'flights',   icon: '📋', label: 'Flights' },
-  { id: 'alerts',    icon: '⚠️', label: 'Alerts' },
-  { id: 'settings',  icon: '⚙️', label: 'Settings' },
+  { id: 'dashboard', icon: '◈', label: 'Dashboard',  route: null },
+  { id: 'fleet',     icon: '🚁', label: 'Fleet',      route: null },
+  { id: 'alerts',    icon: '⚠️', label: 'Alerts',     route: null },
+  { id: 'history',   icon: '📋', label: 'Historial',  route: '/history' },
 ];
 
 interface Props { active: string; onChange: (id: string) => void; alertCount?: number; }
 
 export default function Sidebar({ active, onChange, alertCount }: Props) {
   const { user, logout } = useAuth();
+  const router = useRouter();
+
+  function handleNav(n: typeof nav[0]) {
+    if (n.route) router.push(n.route);
+    else onChange(n.id);
+  }
+
   return (
     <aside className="w-16 h-screen flex flex-col items-center py-6 gap-2 border-r border-white/5 relative z-10"
       style={{ background: 'rgba(5,10,24,0.8)', backdropFilter: 'blur(20px)' }}>
@@ -23,7 +30,7 @@ export default function Sidebar({ active, onChange, alertCount }: Props) {
       </div>
 
       {nav.map(n => (
-        <button key={n.id} onClick={() => onChange(n.id)} title={n.label}
+        <button key={n.id} onClick={() => handleNav(n)} title={n.label}
           className="w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-all duration-200 relative group"
           style={{ background: active===n.id ? 'rgba(0,212,255,0.1)' : 'transparent', color: active===n.id ? '#00d4ff' : '#475569', border: active===n.id ? '1px solid rgba(0,212,255,0.2)' : '1px solid transparent' }}>
           {n.icon}

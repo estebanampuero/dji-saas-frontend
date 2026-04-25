@@ -19,6 +19,10 @@ export const api = {
     req<any>('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   register:   (org_name: string, email: string, password: string) =>
     req<any>('/api/auth/register', { method: 'POST', body: JSON.stringify({ org_name, email, password }) }),
+  refresh:    (refresh_token: string) =>
+    req<any>('/api/auth/refresh', { method: 'POST', body: JSON.stringify({ refresh_token }) }),
+  logout:     (refresh_token: string) =>
+    req<any>('/api/auth/logout', { method: 'POST', body: JSON.stringify({ refresh_token }) }),
   drones:     () => req<any>('/api/drones'),
   addDrone:   (data: any) => req<any>('/api/drones', { method: 'POST', body: JSON.stringify(data) }),
   latest:     (id: string) => req<any>(`/api/drones/${id}/telemetry/latest`),

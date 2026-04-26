@@ -47,10 +47,10 @@
   --neutral-text:  #374151;
   --neutral-border:#D1D5DB;
 
-  /* Text */
-  --text-1:    #111827;
-  --text-2:    #6B7280;
-  --text-3:    #9CA3AF;
+  /* Text — WCAG AA compliant on white */
+  --text-1:    #111827;   /* contrast 16:1 */
+  --text-2:    #374151;   /* contrast 10:1 — was #6B7280 too light */
+  --text-3:    #6B7280;   /* contrast 4.6:1 — was #9CA3AF too light */
 
   /* Radius */
   --r:         12px;
@@ -154,9 +154,9 @@ body {
   padding: 9px 12px; border-radius: var(--r-sm);
   font-size: 0.8125rem; font-weight: 500; color: var(--text-2);
   cursor: pointer; transition: all 0.15s ease; border: 1px solid transparent;
-  text-align: left; width: 100%;
+  text-align: left; width: 100%; background: transparent;
 }
-.nav-item:hover  { background: var(--surface-2); color: var(--text-1); }
+.nav-item:hover  { background: var(--surface-2); color: var(--text-1); border-color: var(--border); }
 .nav-item.active {
   background: var(--brand-50);
   color: var(--brand-700);

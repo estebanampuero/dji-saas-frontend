@@ -1,7 +1,7 @@
 interface Props { percent: number; voltage?: number; temp?: number; remainingMin?: number; }
 
 export default function BatteryGauge({ percent, voltage, temp, remainingMin }: Props) {
-  const pct = percent ?? 0;
+  const pct = Number(percent ?? 0);
   const color = pct > 50 ? '#00ff88' : pct > 25 ? '#fbbf24' : '#ef4444';
   const segments = Array.from({ length: 20 }, (_, i) => i * 5);
 
@@ -24,7 +24,7 @@ export default function BatteryGauge({ percent, voltage, temp, remainingMin }: P
         {voltage != null && (
           <div>
             <p className="text-xs text-slate-500">Voltage</p>
-            <p className="text-sm font-semibold text-cyan-400">{voltage?.toFixed(2)}V</p>
+            <p className="text-sm font-semibold text-cyan-400">{Number(voltage).toFixed(2)}V</p>
           </div>
         )}
         {temp != null && (

@@ -12,7 +12,7 @@ export function useSocket(droneSn?: string) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const socket = io(BASE, { transports: ['websocket', 'polling'] });
+    const socket = io(BASE, { transports: ['polling', 'websocket'], upgrade: true });
     socketRef.current = socket;
 
     socket.on('connect',    () => setConnected(true));

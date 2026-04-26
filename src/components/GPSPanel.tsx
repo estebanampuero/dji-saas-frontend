@@ -1,6 +1,8 @@
 interface Props { lat?: number; lng?: number; satellites?: number; gpsLevel?: number; rtk?: boolean; }
 
 export default function GPSPanel({ lat, lng, satellites, gpsLevel, rtk }: Props) {
+  const latN = lat != null ? Number(lat) : null;
+  const lngN = lng != null ? Number(lng) : null;
   const bars = Array.from({ length: 5 }, (_, i) => i < (gpsLevel ?? 0));
   return (
     <div className="glass p-5">
@@ -19,11 +21,11 @@ export default function GPSPanel({ lat, lng, satellites, gpsLevel, rtk }: Props)
       <div className="space-y-1.5 text-xs">
         <div className="flex justify-between">
           <span className="text-slate-500">Latitude</span>
-          <span className="text-cyan-400 font-mono">{lat?.toFixed(6) ?? '—'}</span>
+          <span className="text-cyan-400 font-mono">{latN != null ? latN.toFixed(6) : '—'}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Longitude</span>
-          <span className="text-cyan-400 font-mono">{lng?.toFixed(6) ?? '—'}</span>
+          <span className="text-cyan-400 font-mono">{lngN != null ? lngN.toFixed(6) : '—'}</span>
         </div>
       </div>
     </div>

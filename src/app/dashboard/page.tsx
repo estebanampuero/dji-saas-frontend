@@ -123,13 +123,15 @@ export default function Dashboard() {
   const showBattery    = show('battery_percent') || show('battery_voltage');
   const showGPS        = show('lat') || show('satellite_count');
   const showFlight     = show('altitude') || show('flight_mode') || show('horizontal_speed');
+  const n = (v: any) => v != null ? Number(v) : null;
+  const f = (v: any, d = 1) => n(v) != null ? n(v)!.toFixed(d) : null;
   const extraMetrics   = [
-    show('gimbal_pitch')      && { key: 'gimbal_pitch',      label: label('gimbal_pitch', 'Gimbal Pitch'), value: activeTelemetry?.gimbal_pitch?.toFixed(1),      unit: '°',   color: '#a78bfa' },
-    show('vertical_speed')    && { key: 'vertical_speed',    label: label('vertical_speed', 'V.Speed'),   value: activeTelemetry?.vertical_speed?.toFixed(1),    unit: 'm/s', color: '#00d4ff' },
-    show('rc_signal_quality') && { key: 'rc_signal_quality', label: label('rc_signal_quality', 'RC Signal'), value: activeTelemetry?.rc_signal_quality,            unit: '%',   color: '#00ff88' },
-    show('gimbal_yaw')        && { key: 'gimbal_yaw',        label: label('gimbal_yaw', 'Gimbal Yaw'),    value: activeTelemetry?.gimbal_yaw?.toFixed(1),        unit: '°',   color: '#fbbf24' },
-    show('gimbal_roll')       && { key: 'gimbal_roll',       label: label('gimbal_roll', 'Gimbal Roll'),  value: activeTelemetry?.gimbal_roll?.toFixed(1),        unit: '°',   color: '#fb923c' },
-    show('wind_speed')        && { key: 'wind_speed',        label: label('wind_speed', 'Viento'),        value: activeTelemetry?.wind_speed?.toFixed(1),        unit: 'm/s', color: '#34d399' },
+    show('gimbal_pitch')      && { key: 'gimbal_pitch',      label: label('gimbal_pitch', 'Gimbal Pitch'), value: f(activeTelemetry?.gimbal_pitch),      unit: '°',   color: '#a78bfa' },
+    show('vertical_speed')    && { key: 'vertical_speed',    label: label('vertical_speed', 'V.Speed'),   value: f(activeTelemetry?.vertical_speed),    unit: 'm/s', color: '#00d4ff' },
+    show('rc_signal_quality') && { key: 'rc_signal_quality', label: label('rc_signal_quality', 'RC Signal'), value: activeTelemetry?.rc_signal_quality,  unit: '%',   color: '#00ff88' },
+    show('gimbal_yaw')        && { key: 'gimbal_yaw',        label: label('gimbal_yaw', 'Gimbal Yaw'),    value: f(activeTelemetry?.gimbal_yaw),        unit: '°',   color: '#fbbf24' },
+    show('gimbal_roll')       && { key: 'gimbal_roll',       label: label('gimbal_roll', 'Gimbal Roll'),  value: f(activeTelemetry?.gimbal_roll),        unit: '°',   color: '#fb923c' },
+    show('wind_speed')        && { key: 'wind_speed',        label: label('wind_speed', 'Viento'),        value: f(activeTelemetry?.wind_speed),        unit: 'm/s', color: '#34d399' },
   ].filter(Boolean) as { key: string; label: string; value: any; unit: string; color: string }[];
 
   return (
@@ -341,11 +343,11 @@ function AgrasPanel({ telemetry: t, show, label }: {
   const cards = [
     show('spray_state')         && { k: 'spray_state',         lbl: label('spray_state','Pulverización'),    val: spraying ? 'ACTIVA' : 'INACTIVA', color: spraying ? '#00ff88' : '#64748b', unit: '' },
     show('pump_state')          && { k: 'pump_state',          lbl: label('pump_state','Bomba'),             val: t.pump_state ? 'ON' : 'OFF',       color: t.pump_state ? '#00d4ff' : '#64748b', unit: '' },
-    show('flow_rate')           && { k: 'flow_rate',           lbl: label('flow_rate','Caudal'),             val: t.flow_rate?.toFixed(1),           color: '#00d4ff', unit: 'L/min' },
-    show('spread_width')        && { k: 'spread_width',        lbl: label('spread_width','Ancho trabajo'),   val: t.spread_width?.toFixed(1),        color: '#a78bfa', unit: 'm' },
-    show('radar_height')        && { k: 'radar_height',        lbl: label('radar_height','Altura radar'),    val: t.radar_height?.toFixed(1),        color: '#fbbf24', unit: 'm' },
-    show('ac_area')             && { k: 'ac_area',             lbl: label('ac_area','Área cubierta'),        val: t.ac_area ? (t.ac_area >= 10000 ? (t.ac_area/10000).toFixed(2)+'ha' : t.ac_area.toFixed(0)+'m²') : '0m²', color: '#34d399', unit: '' },
-    show('payload_weight')      && { k: 'payload_weight',      lbl: label('payload_weight','Carga líquida'),  val: t.payload_weight?.toFixed(1),      color: '#00d4ff', unit: 'kg' },
+    show('flow_rate')           && { k: 'flow_rate',           lbl: label('flow_rate','Caudal'),             val: f(t.flow_rate),           color: '#00d4ff', unit: 'L/min' },
+    show('spread_width')        && { k: 'spread_width',        lbl: label('spread_width','Ancho trabajo'),   val: f(t.spread_width),        color: '#a78bfa', unit: 'm' },
+    show('radar_height')        && { k: 'radar_height',        lbl: label('radar_height','Altura radar'),    val: f(t.radar_height),        color: '#fbbf24', unit: 'm' },
+    show('ac_area')             && { k: 'ac_area',             lbl: label('ac_area','Área cubierta'),        val: n(t.ac_area) != null ? (n(t.ac_area)! >= 10000 ? (n(t.ac_area)!/10000).toFixed(2)+'ha' : n(t.ac_area)!.toFixed(0)+'m²') : '0m²', color: '#34d399', unit: '' },
+    show('payload_weight')      && { k: 'payload_weight',      lbl: label('payload_weight','Carga líquida'),  val: f(t.payload_weight),      color: '#00d4ff', unit: 'kg' },
     show('work_state')          && { k: 'work_state',          lbl: label('work_state','Estado'),            val: t.work_state?.toUpperCase(),       color: '#a78bfa', unit: '' },
     show('nozzle_clogged')      && t.nozzle_clogged && { k: 'nozzle_clogged', lbl: 'ALERTA BOQUILLA', val: 'OBSTRUIDA', color: '#ef4444', unit: '' },
   ].filter(Boolean) as { k: string; lbl: string; val: any; color: string; unit: string }[];
@@ -392,8 +394,8 @@ function AgrasPanel({ telemetry: t, show, label }: {
       {/* Accumulated mission stats */}
       {(show('ac_area') || show('ac_length')) && (
         <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/5">
-          {show('ac_area')   && <div className="text-center"><p className="text-xs text-slate-500">Área acum.</p><p className="text-sm font-semibold text-green-400">{t.ac_area ? (t.ac_area >= 10000 ? (t.ac_area/10000).toFixed(3)+' ha' : t.ac_area.toFixed(0)+' m²') : '0 m²'}</p></div>}
-          {show('ac_length') && <div className="text-center"><p className="text-xs text-slate-500">Dist. acum.</p><p className="text-sm font-semibold text-cyan-400">{t.ac_length ? (t.ac_length >= 1000 ? (t.ac_length/1000).toFixed(2)+' km' : t.ac_length.toFixed(0)+' m') : '0 m'}</p></div>}
+          {show('ac_area')   && <div className="text-center"><p className="text-xs text-slate-500">Área acum.</p><p className="text-sm font-semibold text-green-400">{n(t.ac_area) ? (n(t.ac_area)! >= 10000 ? (n(t.ac_area)!/10000).toFixed(3)+' ha' : n(t.ac_area)!.toFixed(0)+' m²') : '0 m²'}</p></div>}
+          {show('ac_length') && <div className="text-center"><p className="text-xs text-slate-500">Dist. acum.</p><p className="text-sm font-semibold text-cyan-400">{n(t.ac_length) ? (n(t.ac_length)! >= 1000 ? (n(t.ac_length)!/1000).toFixed(2)+' km' : n(t.ac_length)!.toFixed(0)+' m') : '0 m'}</p></div>}
           {show('ac_time')   && <div className="text-center"><p className="text-xs text-slate-500">Tiempo acum.</p><p className="text-sm font-semibold text-purple-400">{t.ac_time ? Math.floor(t.ac_time/60)+'min' : '0min'}</p></div>}
         </div>
       )}

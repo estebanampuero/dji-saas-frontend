@@ -7,7 +7,11 @@ const modeColors: Record<string, string> = {
 
 export default function FlightStatus({ mode, isFlying, altitude, speed, heading, windSpeed }: Props) {
   const mColor = modeColors[mode?.toUpperCase() ?? ''] ?? '#94a3b8';
-  const headingRad = ((heading ?? 0) * Math.PI) / 180;
+  const alt = altitude != null ? Number(altitude) : null;
+  const spd = speed    != null ? Number(speed)    : null;
+  const hdg = heading  != null ? Number(heading)  : null;
+  const wnd = windSpeed!= null ? Number(windSpeed): null;
+  const headingRad = ((hdg ?? 0) * Math.PI) / 180;
   const cx = 40, cy = 40, r = 28;
   const nx = cx + r * Math.sin(headingRad);
   const ny = cy - r * Math.cos(headingRad);
@@ -33,7 +37,7 @@ export default function FlightStatus({ mode, isFlying, altitude, speed, heading,
               return <text key={d} x={cx + (r+6)*Math.sin(a)} y={cy - (r+6)*Math.cos(a) + 3.5}
                 textAnchor="middle" fontSize="7" fill={d==='N'?'#00d4ff':'rgba(148,163,184,0.6)'}>{d}</text>;
             })}
-            <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#00d4ff" strokeWidth="2" strokeLinecap="round" />
+            <line x1={cx} y1={cy} x2={cx + r * Math.sin(headingRad)} y2={cy - r * Math.cos(headingRad)} stroke="#00d4ff" strokeWidth="2" strokeLinecap="round" />
             <circle cx={cx} cy={cy} r="3" fill="#00d4ff" />
           </svg>
         </div>
@@ -41,19 +45,19 @@ export default function FlightStatus({ mode, isFlying, altitude, speed, heading,
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs flex-1">
           <div>
             <p className="text-slate-500">Altitude</p>
-            <p className="text-cyan-400 font-bold text-base">{altitude?.toFixed(1) ?? '—'}<span className="text-slate-500 font-normal text-xs">m</span></p>
+            <p className="text-cyan-400 font-bold text-base">{alt != null ? alt.toFixed(1) : '—'}<span className="text-slate-500 font-normal text-xs">m</span></p>
           </div>
           <div>
             <p className="text-slate-500">H.Speed</p>
-            <p className="text-green-400 font-bold text-base">{speed?.toFixed(1) ?? '—'}<span className="text-slate-500 font-normal text-xs">m/s</span></p>
+            <p className="text-green-400 font-bold text-base">{spd != null ? spd.toFixed(1) : '—'}<span className="text-slate-500 font-normal text-xs">m/s</span></p>
           </div>
           <div>
             <p className="text-slate-500">Heading</p>
-            <p className="text-purple-400 font-bold text-base">{heading?.toFixed(0) ?? '—'}<span className="text-slate-500 font-normal text-xs">°</span></p>
+            <p className="text-purple-400 font-bold text-base">{hdg != null ? hdg.toFixed(0) : '—'}<span className="text-slate-500 font-normal text-xs">°</span></p>
           </div>
           <div>
             <p className="text-slate-500">Wind</p>
-            <p className="text-orange-400 font-bold text-base">{windSpeed?.toFixed(1) ?? '—'}<span className="text-slate-500 font-normal text-xs">m/s</span></p>
+            <p className="text-orange-400 font-bold text-base">{wnd != null ? wnd.toFixed(1) : '—'}<span className="text-slate-500 font-normal text-xs">m/s</span></p>
           </div>
         </div>
       </div>

@@ -211,6 +211,11 @@ export default function HistoryPage() {
                       style={{ background: f.status === 'completed' ? 'rgba(0,255,136,0.08)' : 'rgba(251,191,36,0.08)', color: f.status === 'completed' ? '#00ff88' : '#fbbf24' }}>
                       {f.status}
                     </span>
+                    <button onClick={() => router.push(`/reports/${f.id}`)}
+                      className="text-xs px-2 py-0.5 rounded-full flex-shrink-0 ml-auto"
+                      style={{ background: 'rgba(0,212,255,0.08)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.2)' }}>
+                      Ver reporte →
+                    </button>
                   </div>
                   <p className="text-xs text-slate-500 mb-2">{fmtDate(f.started_at)}</p>
                   {/* Stats en grid responsive */}

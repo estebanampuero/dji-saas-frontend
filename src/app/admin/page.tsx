@@ -117,6 +117,11 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => router.push('/admin/kpi-profiles')}
+            className="text-xs px-2 md:px-3 py-1.5 rounded-full font-medium transition-all"
+            style={{ background: 'rgba(0,255,136,0.08)', color: '#00ff88', border: '1px solid rgba(0,255,136,0.15)' }}>
+            📊 <span className="hidden sm:inline">KPI Profiles</span>
+          </button>
           <button onClick={() => router.push('/dashboard')}
             className="text-xs text-slate-500 hover:text-slate-300 glass px-2 md:px-3 py-1.5 rounded-full">← Dashboard</button>
           <span className="text-xs text-slate-600 glass px-2 md:px-3 py-1.5 rounded-full hidden sm:block truncate max-w-[140px]">{user.email}</span>

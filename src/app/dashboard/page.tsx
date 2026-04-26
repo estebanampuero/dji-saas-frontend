@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/hooks/useSocket';
@@ -12,6 +12,9 @@ import FlightStatus from '@/components/FlightStatus';
 import AlertItem from '@/components/AlertItem';
 import DroneCard from '@/components/DroneCard';
 import type { Drone, Stats, Alert, Telemetry } from '@/types';
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.5-252-52-19.sslip.io';
+function token() { return typeof window !== 'undefined' ? localStorage.getItem('token') : null; }
 
 interface MetricDef {
   key: string;
@@ -33,6 +36,9 @@ export default function Dashboard() {
   const [dbAlerts,     setDbAlerts]     = useState<Alert[]>([]);
   const [latestTelem,  setLatestTelem]  = useState<Telemetry | null>(null);
   const [metricDefs,   setMetricDefs]   = useState<MetricDef[]>([]);
+  const [uploading,    setUploading]    = useState(false);
+  const [uploadMsg,    setUploadMsg]    = useState('');
+  const uploadRef = useRef<HTMLInputElement>(null);
 
   const { telemetry, alerts: wsAlerts, connected } = useSocket(selected?.serial_number);
   const activeTelemetry = telemetry ?? latestTelem;
@@ -70,6 +76,39 @@ export default function Dashboard() {
   async function resolveAlert(id: string) {
     await api.resolve(id);
     setDbAlerts(prev => prev.map(a => a.id === id ? { ...a, resolved: true } : a));
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !selected) return;
+    setUploading(true); setUploadMsg('');
+    try {
+      const text = await file.text();
+      const res = await fetch(`${BASE}/api/agras/import`, {
+        method: 'POST',
+        headers: {
+          Authorization:    `Bearer ${token()}`,
+          'Content-Type':   'text/plain',
+          'x-filename':     file.name,
+          'x-drone-sn':     selected.serial_number,
+          'x-mission-name': file.name.replace(/\.[^.]+$/, ''),
+        },
+        body: text,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const d = data.data;
+      const area = d.total_area_m2
+        ? (d.total_area_m2 >= 10000 ? (d.total_area_m2/10000).toFixed(2)+'ha' : d.total_area_m2.toFixed(0)+'m²')
+        : '';
+      setUploadMsg(`✓ ${d.points_imported} puntos${area ? ' · '+area : ''}${d.duration_sec ? ' · '+Math.round(d.duration_sec/60)+'min' : ''}`);
+      load();
+    } catch (err: any) {
+      setUploadMsg('✗ ' + err.message);
+    } finally {
+      setUploading(false);
+      if (uploadRef.current) uploadRef.current.value = '';
+    }
   }
 
   if (loading) return (
@@ -114,6 +153,17 @@ export default function Dashboard() {
               <span className="w-1.5 h-1.5 rounded-full pulse" style={{ background: connected ? '#00ff88' : '#ef4444' }} />
               <span className="text-xs hidden sm:inline" style={{ color: connected ? '#00ff88' : '#ef4444' }}>{connected ? 'LIVE' : 'OFF'}</span>
             </div>
+
+            {/* Botón subir vuelo — siempre visible */}
+            <label className="cursor-pointer">
+              <input ref={uploadRef} type="file" accept=".csv,.kml,.txt" className="hidden"
+                onChange={handleUpload} disabled={uploading || !selected} />
+              <span className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 transition-all"
+                style={{ background: uploading ? 'rgba(255,255,255,0.04)' : 'rgba(0,212,255,0.12)', color: uploading ? '#475569' : '#00d4ff', border: '1px solid rgba(0,212,255,0.25)', opacity: (!selected || uploading) ? 0.5 : 1 }}>
+                {uploading ? '⏳' : '⬆'} <span className="hidden sm:inline">{uploading ? 'Subiendo...' : 'Subir vuelo'}</span>
+              </span>
+            </label>
+
             {user?.role === 'superadmin' && (
               <button onClick={() => router.push('/admin')}
                 className="text-xs px-2 md:px-3 py-1.5 rounded-full font-medium transition-all"
@@ -125,6 +175,18 @@ export default function Dashboard() {
               {user?.email}
             </div>
           </div>
+
+          {/* Mensaje de resultado upload */}
+          {uploadMsg && (
+            <div className="col-span-full mt-2 text-xs px-3 py-2 rounded-xl"
+              style={{
+                background: uploadMsg.startsWith('✓') ? 'rgba(0,255,136,0.08)' : 'rgba(239,68,68,0.08)',
+                color:      uploadMsg.startsWith('✓') ? '#00ff88' : '#ef4444',
+                border:     `1px solid ${uploadMsg.startsWith('✓') ? 'rgba(0,255,136,0.2)' : 'rgba(239,68,68,0.2)'}`,
+              }}>
+              {uploadMsg}
+            </div>
+          )}
         </div>
 
         {/* DASHBOARD TAB */}

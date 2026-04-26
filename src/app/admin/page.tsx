@@ -117,9 +117,12 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => router.push('/admin/devices')}
+            className="btn btn-ghost text-xs">
+            📱 <span className="hidden sm:inline">Dispositivos</span>
+          </button>
           <button onClick={() => router.push('/admin/kpi-profiles')}
-            className="text-xs px-2 md:px-3 py-1.5 rounded-full font-medium transition-all"
-            style={{ background: 'rgba(0,255,136,0.08)', color: '#00ff88', border: '1px solid rgba(0,255,136,0.15)' }}>
+            className="btn btn-ghost text-xs">
             📊 <span className="hidden sm:inline">KPI Profiles</span>
           </button>
           <button onClick={() => router.push('/dashboard')}
